@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Pauline Irungu Portfolio</title>
+  <meta name="description" content="Portfolio of Pauline Wangari Irungu  Frontend developer & Database Administator & Technician" />
+  <style>
+    /* ---------------------------------------------
+       Reset & base
+    ----------------------------------------------*/
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body,#app{height:100%}
+    body{
+      font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+      color:#fff;
+      background:#081024;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      overflow:hidden;
+    }
+
+    /* ---------------------------------------------
+       Animated colorful spiral background
+       - Uses conic-gradient and rotation + hue-rotate
+    ----------------------------------------------*/
+    .bg {
+      position:fixed;inset:0;z-index:-2;pointer-events:none;
+      transform:translateZ(0);
+    }
+    .bg::before{
+      content:"";position:absolute;inset:-30%;
+      background:conic-gradient(from 0deg at 50% 50%, #ff4d6d, #ffb86b, #7efcff, #6b8bff, #c86bff, #ff4d6d);
+      filter:blur(60px) contrast(1.1);
+      animation:spin 18s linear infinite, hue 12s linear infinite;
+      transform-origin:50% 50%;
+    }
+    @keyframes spin{ to{transform:rotate(360deg)} }
+    @keyframes hue{0%{filter:blur(60px) hue-rotate(0deg)}50%{filter:blur(40px) hue-rotate(180deg)}100%{filter:blur(60px) hue-rotate(360deg)} }
+
+    /* frosted layer to soften colors */
+    .bg::after{
+      content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,16,36,0.25),rgba(2,6,18,0.8));
+    }
+
+    /* ---------------------------------------------
+       Layout
+    ----------------------------------------------*/
+    .container{
+      height:100vh;display:grid;grid-template-columns:250px 1fr;gap:28px;padding:28px;align-items:start;
+    }
+
+    /* Sidebar / navigation */
+    nav{
+      background:rgba(255,255,255,0.04);backdrop-filter:blur(8px);border-radius:16px;padding:20px;height:calc(100vh - 56px);overflow:auto;
+      box-shadow:0 6px 30px rgba(2,6,18,0.6);
+      transform-style:preserve-3d; /* enable 3d children */
+      perspective:900px;
+    }
+    .brand{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+    .avatar{width:64px;height:64px;border-radius:12px;overflow:hidden;flex:0 0 64px;box-shadow:0 6px 18px rgba(0,0,0,0.5)}
+    .avatar img{width:100%;height:100%;object-fit:cover;display:block}
+    .brand h1{font-size:1rem;margin-bottom:2px}
+    .brand p{font-size:0.8rem;color:rgba(255,255,255,0.75)}
+
+    .nav-links{display:flex;flex-direction:column;gap:8px}
+    .nav-links a{
+      display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;text-decoration:none;color:inherit;font-weight:600;
+      transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .2s;
+      transform-origin:left center;
+    }
+    .nav-links a:hover{transform:translateX(8px) rotateY(-8deg);box-shadow:0 10px 26px rgba(0,0,0,0.45)}
+    .nav-links a.active{background:linear-gradient(90deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02));}
+
+    /* content area */
+    main{
+      height:calc(100vh - 56px);overflow:auto;padding:28px;border-radius:16px;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(0,0,0,0.12));
+      box-shadow:0 14px 50px rgba(2,6,18,0.6);position:relative;transform-style:preserve-3d;
+    }
+
+    /* Page container with 3D flip transitions */
+    .pages{position:relative;height:100%;}
+    section.page{position:absolute;inset:0;padding:28px;backface-visibility:hidden;transform-style:preserve-3d;opacity:0;pointer-events:none;
+      transition:transform 700ms cubic-bezier(.2,.8,.2,1),opacity 350ms ease;
+    }
+    section.page.show{opacity:1;pointer-events:auto;transform:translateZ(0) rotateY(0deg)}
+    section.page.enter-left{transform:translateX(-8%) rotateY(18deg) translateZ(-80px)}
+    section.page.enter-right{transform:translateX(8%) rotateY(-18deg) translateZ(-80px)}
+
+    header.page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+    header.page-header h2{font-size:1.6rem}
+    .small{font-size:0.9rem;color:rgba(255,255,255,0.8)}
+
+    /* Home hero */
+    .hero{display:flex;gap:24px;align-items:center}
+    .hero .intro{flex:1}
+    .intro h3{font-size:2rem;margin-bottom:8px}
+    .intro p{color:rgba(255,255,255,0.9);line-height:1.4}
+    .cta{margin-top:16px}
+    .btn{display:inline-block;padding:10px 16px;border-radius:10px;font-weight:700;text-decoration:none;background:linear-gradient(90deg,#8be9fd,#7b61ff);color:#04102a;box-shadow:0 8px 30px rgba(123,97,255,0.25);}
+
+    /* Projects grid */
+    .projects-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:18px}
+    .card{background:linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01));padding:14px;border-radius:14px;backdrop-filter:blur(6px);
+      transition:transform .45s cubic-bezier(.22,.9,.3,1),box-shadow .35s;transform-origin:center center;transform-style:preserve-3d;
+      perspective:900px;box-shadow:0 8px 40px rgba(2,6,18,0.6);
+    }
+    .card:hover{transform:translateY(-10px) rotateX(6deg) rotateY(-6deg) translateZ(40px);box-shadow:0 20px 60px rgba(2,6,18,0.7)}
+    .card h4{margin-bottom:8px}
+    .card p{font-size:0.9rem;color:rgba(255,255,255,0.85)}
+
+    /* Skills progress */
+    .skill{margin-bottom:12px}
+    .skill .label{display:flex;justify-content:space-between;margin-bottom:6px}
+    .bar{height:12px;background:rgba(255,255,255,0.06);border-radius:12px;overflow:hidden}
+    .bar > i{display:block;height:100%;width:0%;background:linear-gradient(90deg,#6bffda,#6b8bff);border-radius:12px;transform-origin:left;animation:fill 1.4s forwards}
+    @keyframes fill{to{width:var(--w)}}
+
+    /* Contact form */
+    form{max-width:640px}
+    input,textarea{width:100%;padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.02);color:inherit;margin-bottom:10px}
+
+    /* Flip card for interests */
+    .flip-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+    .flip{perspective:1000px}
+    .flip-inner{position:relative;height:180px;transform-style:preserve-3d;transition:transform 700ms cubic-bezier(.2,.8,.2,1)}
+    .flip:hover .flip-inner{transform:rotateY(180deg)}
+    .flip-face{position:absolute;inset:0;border-radius:12px;padding:16px;backface-visibility:hidden}
+    .flip-front{background:linear-gradient(90deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))}
+    .flip-back{transform:rotateY(180deg);background:linear-gradient(90deg,rgba(255,255,255,0.02),rgba(255,255,255,0.03))}
+
+    /* footer */
+    footer{position:relative;margin-top:18px;font-size:0.9rem;color:rgba(255,255,255,0.65)}
+
+    /* responsive */
+    @media (max-width:900px){
+      .container{grid-template-columns:1fr;padding:14px}
+      nav{height:auto;display:flex;gap:12px;overflow:auto}
+      main{height:auto;margin-top:12px}
+    }
+  </style>
+</head>
+<body>
+  <div class="bg" aria-hidden="true"></div>
+  <div id="app" class="container">
+    <nav aria-label="Main navigation">
+      <div class="brand" role="banner">
+        <div class="avatar"><img src="IMG-20250914-WA0003(1).jpg" alt="Pauline Irungu"/></div>
+        <div>
+          <h1>Pauline Irungu</h1>
+          <p class="small">Frontend Developer • Database Administator</p>
+        </div>
+      </div>
+
+      <div class="nav-links" role="navigation">
+        <a href="#home" data-target="home" class="active">🏠 Home</a>
+        <a href="#about" data-target="about">🧾 About</a>
+        <a href="#skills" data-target="skills">💻 Skills</a>
+        <a href="#projects" data-target="projects">🗂 Projects</a>
+        <a href="#interests" data-target="interests">🎯 Interests</a>
+        <a href="#contact" data-target="contact">✉️ Contact</a>
+      </div>
+
+      <div style="margin-top:16px">
+        <small class="small">Quick links</small>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <a class="btn" href="#projects">See projects</a>
+          <a class="btn" href="#contact">Contact</a>
+        </div>
+      </div>
+
+      <footer style="margin-top:20px">&copy; <span id="year"></span> Pauline Irungu</footer>
+    </nav>
+
+    <main>
+      <div class="pages" id="pages">
+
+        <!-- HOME -->
+        <section id="home" class="page show enter-left" aria-labelledby="home-title">
+          <header class="page-header"><h2 id="home-title">Home</h2><div class="small">Welcome — explore the portfolio</div></header>
+          <div class="hero">
+            <div class="intro">
+              <h3>Hi, I'm Pauline.</h3>
+              <p> i am a passionate Software developer, Database administrator whereby i build programs and solve problems that affect the real world<br> 
+                I'm a fullstack developer where i specialize in frontend development.</p>
+               <br>
+              <p>I build attractive, accessible frontends with HTML, CSS and JavaScript, MySQL, Mongodb, React, Nodejs.</p>
+              <div class="cta"><a class="btn" href="#projects">View Projects</a></div>
+            </div>
+            <div style="width:360px;max-width:40%;">
+              <div class="card" style="height:220px;display:flex;flex-direction:column;justify-content:center;align-items:center">
+                <h4>Featured</h4>
+                <p style="text-align:center">Agritech E‑commerce project full frontend with cart, admin panel and M‑Pesa integration.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ABOUT -->
+        <section id="about" class="page enter-right" aria-labelledby="about-title">
+          <header class="page-header"><h2 id="about-title">About</h2><div class="small">Who I am</div></header>
+          <div style="display:grid;grid-template-columns:1fr 320px;gap:18px">
+            <div>
+              <h3>Profile</h3>
+              <p>My name is Pauline Wangari Irungu. I specialize in frontend development with HTML, CSS, JavaScript, MYSQL, Mongodb, React and Nodejs. I have hands‑on experience as an ICT Technician and support from Kenya Medical Training College and have worked in customer service roles.</p>
+
+              <h3 style="margin-top:16px">Education</h3>
+              <ul>
+                <li>Nyeri National Polytechnic - Diploma in Information Communication Technology (Completed)</li>
+                <li>Power Leran Project (PLP) - MERN Stack</li>
+                <li>Gatero Girls High School — KCSE</li>
+              </ul>
+
+              <h3 style="margin-top:16px">Experience</h3>
+              <ul>
+                <li>MyCredit Company Limited </li>
+                <li>ICT support, ICT technician & technical training at Kenya Medical Training College</li>
+              </ul>
+            </div>
+
+            <aside>
+              <div class="card">
+                <h4>Contact</h4>
+                <p class="small">Email: <strong>irungupauline611@gmail.com</strong></p>
+                <p class="small">Phone: <strong>0706032394</strong></p>
+                <p class="small">Location: Nyeri, Kenya</p>
+              </div>
+              <div style="height:12px"></div>
+              <div class="card">
+                <h4>Languages</h4>
+                <p>English — Fluent<br/>Kiswahili — Fluent<br/>German — Intermediate </p>
+              </div>
+            </aside>
+          </div>
+        </section>
+
+        <!-- SKILLS -->
+        <section id="skills" class="page enter-right" aria-labelledby="skills-title">
+          <header class="page-header"><h2 id="skills-title">Skills</h2><div class="small">Technical & soft skills</div></header>
+          <div style="display:flex;gap:24px;flex-wrap:wrap">
+            <div style="flex:1;min-width:280px">
+              <h4>Technical</h4>
+              <div class="skill">
+                <div class="label"><span>HTML & CSS</span><span>100%</span></div>
+                <div class="bar"><i style="--w:100%"></i></div>
+              </div>
+              <div class="skill">
+                <div class="label"><span>JavaScript</span><span>100%</span></div>
+                <div class="bar"><i style="--w:100%"></i></div>
+              </div>
+              <div class="skill">
+                <div class="label"><span>React.js</span><span>90%</span></div>
+                <div class="bar"><i style="--w:90%"></i></div>
+              </div>
+              <div class="skill">
+                <div class="label"><span>MySQL / Mongodb</span><span>100%</span></div>
+                <div class="bar"><i style="--w:100%"></i></div>
+              </div>
+                <div class="skill">
+                    <div class="label"><span>Git & GitHub</span><span>90%</span></div>
+                    <div class="bar"><i style="--w:90%"></i></div>
+                </div>
+              <div class="skill">
+                <div class="label"><span>Nodejs</span><span>80%</span></div>
+                <div class="bar"><i style="--w:80%"></i></div>
+                </div>
+
+              <h4 style="margin-top:14px">Soft skills</h4>
+              <ul>
+                <li>Customer service</li>
+                <li>Teamwork & communication</li>
+                <li>Problem solving & debugging</li>
+              </ul>
+            </div>
+
+            <div style="min-width:300px">
+              <h4>Tools</h4>
+              <div class="projects-grid">
+                <div class="card"><h4>VS Code</h4><p>Daily driver for development and debugging.</p></div>
+                <div class="card"><h4>Git & GitHub</h4><p>Source control and collaboration.</p></div>
+                <div class="card"><h4>Figma</h4><p>Design mockups and quick UI prototypes.</p></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- PROJECTS -->
+        <section id="projects" class="page enter-left" aria-labelledby="projects-title">
+          <header class="page-header"><h2 id="projects-title">Projects</h2><div class="small">Selected work</div></header>
+          <div class="projects-grid">
+            <article class="card">
+              <h4>Agritech E‑commerce</h4>
+              <p>Frontend for an agricultural products marketplace with cart, admin panel, and M‑Pesa payment mock integration.</p>
+            </article>
+
+            <article class="card">
+              <h4>MERN Blog App (Course)</h4>
+              <p>Fullstack project: REST API with authentication, React frontend, image uploads and pagination.</p>
+            </article>
+
+            <article class="card">
+              <h4>Real‑time Chat App</h4>
+              <p>Socket.io real‑time messaging with online presence and typing indicators created for a coursework assignment.</p>
+            </article>
+
+            <article class="card">
+              <h4>Bug Tracker</h4>
+              <p>Issue management UI with filters, user roles and test coverage for backend and frontend.</p>
+            </article>
+          </div>
+        </section>
+
+        <!-- INTERESTS -->
+        <section id="interests" class="page enter-right" aria-labelledby="interests-title">
+          <header class="page-header"><h2 id="interests-title">Interests</h2><div class="small">What I enjoy</div></header>
+          <div class="flip-grid">
+            <div class="flip">
+              <div class="flip-inner">
+                <div class="flip-face flip-front card"><h4>Photography</h4><p>Capturing landscapes and candid moments.</p></div>
+                <div class="flip-face flip-back card"><h4>Gear</h4><p>DSLR, prime lens, and lots of patience.</p></div>
+              </div>
+            </div>
+
+            <div class="flip">
+              <div class="flip-inner">
+                <div class="flip-face flip-front card"><h4>Programming</h4><p>Building and designing softwares, apps, websites and learning new stacks.</p></div>
+                <div class="flip-face flip-back card"><h4>Learning</h4><p>React, Nodejs, MERN workflow and German language.</p></div>
+              </div>
+            </div>
+
+            <div class="flip">
+              <div class="flip-inner">
+                <div class="flip-face flip-front card"><h4>Hiking</h4><p>Exploring nature and local culture.</p></div>
+                <div class="flip-face flip-back card"><h4>Places</h4><p>Hikes around Kenya and scenic drives.</p></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- CONTACT -->
+        <section id="contact" class="page enter-left" aria-labelledby="contact-title">
+          <header class="page-header"><h2 id="contact-title">Contact</h2><div class="small">Get in touch</div></header>
+          <div style="display:grid;grid-template-columns:1fr 320px;gap:18px">
+            <div>
+              <p>If you'd like to reach out about a project, Jobs, or collaboration — send a message below.</p>
+              <form id="contactForm" onsubmit="return false">
+                <input id="name" placeholder="Your name" required />
+                <input id="email" type="email" placeholder="Your email" required />
+                <textarea id="message" rows="6" placeholder="Your message" required></textarea>
+                <button id="send" class="btn">Send message</button>
+                <div id="formResult" class="small" style="margin-top:10px;display:none"></div>
+              </form>
+            </div>
+
+            <aside>
+              <div class="card">
+                <h4>Available for</h4>
+                <p>Frontend Jobs, freelancing on web apps, and collaborating in projects.</p>
+              </div>
+            </aside>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // basic SPA navigation
+    const links = document.querySelectorAll('.nav-links a');
+    const pages = document.querySelectorAll('section.page');
+    const year = document.getElementById('year');
+    year.textContent = new Date().getFullYear();
+
+    function showPage(id){
+      pages.forEach(p=>{
+        if(p.id===id){
+          p.classList.add('show');
+          p.classList.remove('enter-left','enter-right');
+        } else {
+          p.classList.remove('show');
+          // add enter side for a pleasant 3d effect
+          const rect = p.getBoundingClientRect();
+          const center = window.innerWidth/2;
+          // determine fake entrance direction based on nav order
+          p.classList.add((center>rect.left)?'enter-left':'enter-right');
+        }
+      });
+      links.forEach(a=>a.classList.toggle('active', a.dataset.target===id));
+    }
+
+    links.forEach(a=>a.addEventListener('click', e=>{
+      links.forEach(x=>x.classList.remove('active'));
+      e.currentTarget.classList.add('active');
+      const target = e.currentTarget.dataset.target;
+      history.pushState(null,'',`#${target}`);
+      showPage(target);
+    }));
+
+    // handle direct hash navigation
+    function handleHash(){
+      const hash = location.hash.replace('#','') || 'home';
+      showPage(hash);
+    }
+    window.addEventListener('hashchange', handleHash);
+    handleHash();
+
+    // animate skill bars when skills page visible
+    const skillObserver = new IntersectionObserver(entries=>{
+      entries.forEach(en=>{
+        if(en.isIntersecting){
+          en.target.querySelectorAll('.bar > i').forEach(i=>{
+            // restart animation by toggling width after tiny delay
+            i.style.width = i.style.getPropertyValue('--w');
+          });
+        }
+      });
+    }, {threshold:.25});
+    document.querySelectorAll('#skills').forEach(el=>skillObserver.observe(el));
+
+    // fake contact form handler (client-side only)
+    const form = document.getElementById('contactForm');
+    const formResult = document.getElementById('formResult');
+    form.addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const name = document.getElementById('name').value.trim();
+      formResult.style.display='block';
+      formResult.textContent = `Thanks ${name}! This is a demo form. You can wire it to an email service or backend.`;
+      form.reset();
+    });
+
+    // small motion preference respect
+    if(window.matchMedia('(prefers-reduced-motion:reduce)').matches){
+      document.querySelector('.bg::before')?.style?.setProperty('animation','none');
+    }
+
+    // keyboard: allow navigation with number keys 1..6
+    window.addEventListener('keydown', (e)=>{
+      if(document.activeElement.tagName==='INPUT' || document.activeElement.tagName==='TEXTAREA') return;
+      const map = ['home','about','skills','projects','interests','contact'];
+      if(e.key>='1' && e.key<='6'){
+        const idx = parseInt(e.key,10)-1; location.hash = `#${map[idx]}`;
+      }
+    });
+
+  </script>
+</body>
+</html>
